@@ -1,5 +1,4 @@
-
-import { getQuestions } from "./questions.js";
+import { generateQuestions } from "./questions.js";
 import { drawMain, drawOption } from "./canvas.js";
 
 const $ = (selector) => document.querySelector(selector);
