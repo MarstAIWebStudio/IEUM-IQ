@@ -1,0 +1,180 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#7558f5">
+  <meta name="description" content="IEUM IQ - 나이에 맞춘 논리력과 추론력 테스트">
+  <title>IEUM IQ — 나이 맞춤 지능 테스트</title>
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="./">
+      <span class="brand-icon">IQ</span>
+      <span>IEUM <b>IQ</b></span>
+    </a>
+    <span class="header-tag">BRAIN LAB</span>
+  </header>
+
+  <main class="container">
+    <section id="home" class="screen active">
+      <div class="hero">
+        <div class="eyebrow">YOUR MIND, YOUR RULES</div>
+        <h1>당신의 두뇌를<br><span>탐험해 보세요.</span></h1>
+        <p class="hero-description">
+          나이에 맞는 문제를 풀고 논리력, 패턴 인식,
+          추론 능력을 확인해 보세요.
+        </p>
+      </div>
+
+      <div class="panel age-panel">
+        <label for="age">현재 나이</label>
+        <div class="age-input-wrap">
+          <input id="age" type="number" min="1" max="99"
+                 value="15" placeholder="나이 입력">
+          <span>세</span>
+        </div>
+
+        <div class="age-presets">
+          <button type="button" data-age="5">5세</button>
+          <button type="button" data-age="10">10세</button>
+          <button type="button" data-age="20">20세</button>
+          <button type="button" data-age="30">30세</button>
+          <button type="button" data-age="60">60세</button>
+          <button type="button" data-age="90">90세</button>
+        </div>
+
+        <button id="start-button" class="primary-button">
+          테스트 시작하기 <span>→</span>
+        </button>
+
+        <div class="test-info">
+          <span>🧩 논리 추론</span>
+          <span>🔢 규칙 찾기</span>
+          <span>🎯 총 10문제</span>
+        </div>
+      </div>
+
+      <div class="feature-grid">
+        <article class="feature-card">
+          <span class="feature-icon purple">◈</span>
+          <h3>패턴 인식</h3>
+          <p>숨겨진 규칙을 찾아보세요.</p>
+        </article>
+        <article class="feature-card">
+          <span class="feature-icon blue">∑</span>
+          <h3>논리 추론</h3>
+          <p>논리적으로 답을 도출해 보세요.</p>
+        </article>
+        <article class="feature-card">
+          <span class="feature-icon orange">✳</span>
+          <h3>결과 분석</h3>
+          <p>문제 해결 능력을 확인하세요.</p>
+        </article>
+      </div>
+
+      <p class="disclaimer">
+        본 테스트는 재미와 자기 탐색을 위한 비공식 테스트이며,
+        전문 심리검사 또는 표준화 IQ 검사를 대체하지 않습니다.
+      </p>
+    </section>
+
+    <section id="test" class="screen">
+      <div class="test-header">
+        <button id="exit-button" class="text-button">← 나가기</button>
+        <span id="question-counter">QUESTION 1 / 10</span>
+      </div>
+
+      <div class="progress-track">
+        <div id="progress-bar" class="progress-bar"></div>
+      </div>
+
+      <div class="question-card">
+        <div id="question-category" class="eyebrow">PATTERN</div>
+        <h2 id="question-title">문제 제목</h2>
+        <p id="question-description"></p>
+
+        <div id="question-visual" class="question-visual"></div>
+        <div id="answer-list" class="answer-list"></div>
+
+        <button id="next-button" class="primary-button" disabled>
+          다음 문제 <span>→</span>
+        </button>
+      </div>
+
+      <p class="question-note">
+        서두르지 말고 규칙을 생각해 보세요.
+      </p>
+    </section>
+
+    <section id="result" class="screen">
+      <div class="result-heading">
+        <div class="eyebrow">YOUR RESULT</div>
+        <h1>테스트 완료! 🎉</h1>
+        <p id="result-subtitle"></p>
+      </div>
+
+      <div class="panel score-panel">
+        <div class="score-label">MARST 지능 지수</div>
+        <div id="score-value" class="score-value">100</div>
+        <div id="score-tier" class="score-tier"></div>
+        <p id="score-description"></p>
+        <div class="score-footnote">
+          비공식 시뮬레이션 지수 · 표준 IQ 점수가 아님
+        </div>
+      </div>
+
+      <div class="panel analysis-panel">
+        <h2>📊 결과 분석</h2>
+        <div class="stat-row">
+          <span>정답 수</span>
+          <strong id="correct-value">0 / 10</strong>
+        </div>
+        <div class="stat-row">
+          <span>정답률</span>
+          <strong id="accuracy-value">0%</strong>
+        </div>
+        <div class="stat-row">
+          <span>테스트 연령</span>
+          <strong id="result-age">15세</strong>
+        </div>
+        <div class="stat-row">
+          <span>문제 해결 수준</span>
+          <strong id="level-value">분석 중</strong>
+        </div>
+        <div id="category-results" class="category-results"></div>
+      </div>
+
+      <div class="panel share-panel">
+        <h2>결과를 공유해 보세요!</h2>
+        <p>친구들도 테스트를 해 보도록 초대하세요.</p>
+        <div class="share-preview" id="share-preview"></div>
+        <button id="share-button" class="primary-button">
+          결과 공유하기 ↗
+        </button>
+        <button id="copy-button" class="secondary-button">
+          결과 텍스트 복사
+        </button>
+      </div>
+
+      <button id="retry-button" class="secondary-button">
+        다시 테스트하기 ↻
+      </button>
+
+      <p class="disclaimer">
+        본 결과는 자체 제작 문제에 대한 성적과 시뮬레이션 계산값입니다.
+        실제 IQ, 지능의 절대적 수준 또는 의학적 진단을 의미하지 않습니다.
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    <span>IEUM IQ</span>
+    <span>Explore your thinking.</span>
+  </footer>
+
+  <script type="module" src="./js/app.js"></script>
+</body>
+</html>
