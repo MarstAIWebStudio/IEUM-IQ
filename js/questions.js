@@ -1,268 +1,276 @@
 
-const TYPES = [
-  { id: "sequence", name: "반복 패턴", difficulty: 1 },
-  { id: "matrix", name: "행렬 추론", difficulty: 2 },
-  { id: "rotation", name: "도형 회전", difficulty: 2 },
-  { id: "symmetry", name: "대칭 추론", difficulty: 2 },
-  { id: "odd", name: "다른 그림 찾기", difficulty: 1 },
-  { id: "count", name: "도형 개수", difficulty: 1 },
-  { id: "size", name: "크기 패턴", difficulty: 2 },
-  { id: "position", name: "위치 이동", difficulty: 3 }
-];
-
 const SHAPES = ["circle", "square", "triangle", "diamond"];
 const SHAPE_NAMES = {
   circle: "원",
   square: "정사각형",
   triangle: "삼각형",
-  diamond: "마름모",
-  star: "별"
+  diamond: "마름모"
 };
 
-function makeQuestion(id, type, level) {
-  const seed = id * 17 + level * 13;
-  const shift = seed % 4;
+const CATEGORIES = [
+  { id: "sequence", name: "규칙 찾기" },
+  { id: "matrix", name: "도형 행렬" },
+  { id: "rotation", name: "회전 추론" },
+  { id: "symmetry", name: "대칭 추론" },
+  { id: "odd", name: "다른 도형 찾기" },
+  { id: "counting", name: "개수 추론" },
+  { id: "size", name: "크기 규칙" },
+  { id: "position", name: "위치 이동" }
+];
 
-  switch (type) {
-    case "sequence": {
-      const a = SHAPES[shift];
-      const b = SHAPES[(shift + 1) % 4];
-      const c = SHAPES[(shift + 2) % 4];
-      const mode = level % 2;
-
-      const items = mode
-        ? [a, b, c, a, b, null]
-        : [a, b, a, b, a, null];
-
-      const answer = mode ? c : b;
-      const choices = [answer, a, b, SHAPES[(shift + 3) % 4]];
-      const options = [...new Set(choices)];
-
-      while (options.length < 4) {
-        const candidate = SHAPES[(shift + options.length) % 4];
-        if (!options.includes(candidate)) options.push(candidate);
-      }
-
-      return {
-        visual: { kind: "sequence", items },
-        options,
-        answer: options.indexOf(answer),
-        rule: mode
-          ? "세 도형이 차례로 반복되는 규칙이야."
-          : "두 도형이 번갈아 나타나는 규칙이야.",
-        steps: [
-          `첫 번째 도형은 ${SHAPE_NAMES[a]}이야.`,
-          mode
-            ? `${SHAPE_NAMES[a]} → ${SHAPE_NAMES[b]} → ${SHAPE_NAMES[c]} 순서가 반복돼.`
-            : `${SHAPE_NAMES[a]}과 ${SHAPE_NAMES[b]}가 교대로 나타나.`,
-          `따라서 빈칸에는 ${SHAPE_NAMES[answer]}이 들어가.`
-        ]
-      };
-    }
-
-    case "matrix": {
-      const grid = Array.from({ length: 3 }, (_, r) =>
-        Array.from({ length: 3 }, (_, c) => SHAPES[(r + c + shift) % 4])
-      );
-
-      const answer = grid[2][2];
-      grid[2][2] = null;
-
-      return {
-        visual: { kind: "matrix", cells: grid },
-        options: [answer, SHAPES[(shift + 1) % 4],
-          SHAPES[(shift + 2) % 4], SHAPES[(shift + 3) % 4]],
-        answer: 0,
-        rule: "각 행에서 도형이 일정한 순서로 한 칸씩 바뀌어.",
-        steps: [
-          "첫 번째 행의 도형 순서를 관찰해.",
-          "아래 행으로 내려갈 때도 같은 순환 규칙이 유지돼.",
-          `빈칸은 ${SHAPE_NAMES[answer]}이야.`
-        ]
-      };
-    }
-
-    case "rotation": {
-      const start = (level % 4) * 90;
-      const turn = level % 2 ? 180 : 90;
-      const answer = (start + turn) % 360;
-      const angles = [0, 90, 180, 270];
-
-      return {
-        visual: {
-          kind: "rotation",
-          angle: start,
-          targetAngle: answer
-        },
-        options: angles,
-        answer: angles.indexOf(answer),
-        rule: `화살표를 시계 방향으로 ${turn}도 회전해.`,
-        steps: [
-          `처음 방향은 ${start}도야.`,
-          `회전량 ${turn}도를 더하면 ${start + turn}도가 돼.`,
-          `한 바퀴는 360도이므로 결과 방향은 ${answer}도야.`
-        ]
-      };
-    }
-
-    case "symmetry": {
-      const shape = SHAPES[shift];
-      const reflected = shift % 2 === 0 ? "horizontal" : "vertical";
-
-      return {
-        visual: { kind: "symmetry", shape, axis: reflected },
-        options: ["original", "reflected", "rotated", "different"],
-        answer: 1,
-        rule: "대칭축을 기준으로 거울에 비친 것처럼 뒤집어야 해.",
-        steps: [
-          `원래 도형은 ${SHAPE_NAMES[shape]}이야.`,
-          "대칭은 축에서 같은 거리에 있는 점이 반대편에 놓이는 변환이야.",
-          "회전하는 것이 아니라 축을 기준으로 반사한 그림이 정답이야."
-        ]
-      };
-    }
-
-    case "odd": {
-      const normal = SHAPES[shift];
-      const odd = SHAPES[(shift + 2) % 4];
-      const items = [normal, normal, normal, odd];
-      const order = (level + 1) % 4;
-      [items[order], items[3]] = [items[3], items[order]];
-
-      return {
-        visual: { kind: "odd", items },
-        options: [0, 1, 2, 3],
-        answer: items.indexOf(odd),
-        rule: "세 그림은 같은 모양이고 한 그림만 다른 모양이야.",
-        steps: [
-          `대부분의 그림은 ${SHAPE_NAMES[normal]}이야.`,
-          `하나만 ${SHAPE_NAMES[odd]}으로 다르게 나타나.`,
-          "다수의 그림과 모양이 다른 위치를 고르면 돼."
-        ]
-      };
-    }
-
-    case "count": {
-      const count = 3 + (seed % 6);
-      const shapes = Array.from(
-        { length: count },
-        (_, i) => SHAPES[(i + shift) % 4]
-      );
-
-      const choices = [count, count + 1, Math.max(1, count - 1), count + 2];
-
-      return {
-        visual: { kind: "count", items: shapes },
-        options: choices,
-        answer: 0,
-        rule: "그림 안에 있는 도형의 총개수를 세면 돼.",
-        steps: [
-          "그림을 왼쪽에서 오른쪽으로 살펴봐.",
-          "각 도형을 하나씩 세고 중복해서 세지 않도록 해.",
-          `전체 도형은 ${count}개야.`
-        ]
-      };
-    }
-
-    case "size": {
-      const sizes = level % 2
-        ? [1, 2, 3, 1, 2, null]
-        : [1, 2, 3, 4, null];
-
-      const answer = level % 2 ? 3 : 5;
-
-      return {
-        visual: { kind: "size", sizes },
-        options: [answer, 1, 2, 4],
-        answer: 0,
-        rule: "도형의 크기가 일정한 순서로 커지고 있어.",
-        steps: [
-          "각 도형의 크기를 비교해 봐.",
-          "첫 번째 유형은 작은 크기부터 차례로 커져.",
-          level % 2
-            ? "세 단계 크기가 반복되므로 다음은 가장 큰 크기야."
-            : "크기가 한 단계씩 증가하므로 다음은 다섯 번째 크기야."
-        ]
-      };
-    }
-
-    case "position": {
-      const start = seed % 9;
-      const dx = level % 2 ? 1 : 2;
-      const dy = level % 2 ? 2 : 1;
-      const cells = Array.from({ length: 4 }, (_, i) => ({
-        x: (start % 3 + i * dx) % 3,
-        y: (Math.floor(start / 3) + i * dy) % 3
-      }));
-
-      const last = cells[3];
-      const answer = {
-        x: (last.x + dx) % 3,
-        y: (last.y + dy) % 3
-      };
-
-      return {
-        visual: { kind: "position", cells, answer },
-        options: [
-          answer,
-          { x: (answer.x + 1) % 3, y: answer.y },
-          { x: answer.x, y: (answer.y + 1) % 3 },
-          { x: (answer.x + 2) % 3, y: (answer.y + 2) % 3 }
-        ],
-        answer: 0,
-        rule: "표시된 점이 격자 안에서 일정한 간격으로 이동해.",
-        steps: [
-          "연속된 그림에서 점의 위치를 비교해.",
-          `가로 방향은 ${dx}칸, 세로 방향은 ${dy}칸씩 이동해.`,
-          "격자의 끝을 넘으면 반대쪽에서 이어지는 규칙을 적용해."
-        ]
-      };
-    }
-
-    default:
-      throw new Error(`Unknown question type: ${type}`);
-  }
-}
-
-function shuffle(array, seed) {
+function shuffle(array, random = Math.random) {
   const result = [...array];
-  let state = seed >>> 0;
 
   for (let i = result.length - 1; i > 0; i--) {
-    state = (state * 1664525 + 1013904223) >>> 0;
-    const j = state % (i + 1);
+    const j = Math.floor(random() * (i + 1));
     [result[i], result[j]] = [result[j], result[i]];
   }
 
   return result;
 }
 
-export function getQuestions(age) {
-  const questions = [];
+function makeRandom(seed) {
+  let value = seed >>> 0;
 
-  TYPES.forEach((type, typeIndex) => {
-    for (let level = 1; level <= 5; level++) {
-      const id = typeIndex * 5 + level;
-      const question = makeQuestion(id, type.id, level);
+  return () => {
+    value = (value * 1664525 + 1013904223) >>> 0;
+    return value / 4294967296;
+  };
+}
 
-      questions.push({
-        id,
-        type: type.id,
-        typeName: type.name,
-        difficulty: Math.min(5, type.difficulty + Math.floor((level - 1) / 2)),
-        title: "그림 속 규칙을 찾아 빈칸을 완성해 봐.",
-        visual: question.visual,
-        options: question.options,
-        answer: question.answer,
-        rule: question.rule,
-        steps: question.steps,
-        age
-      });
+function makeOptions(answer, candidates, random) {
+  const unique = [...new Set(candidates)]
+    .filter((item) => item !== answer);
+
+  return shuffle([answer, ...shuffle(unique, random).slice(0, 3)], random);
+}
+
+function makeQuestion(category, level, index, random) {
+  const id = `${category}-${level}-${index}`;
+  const shape = () => SHAPES[Math.floor(random() * SHAPES.length)];
+
+  if (category === "sequence") {
+    const mode = index % 2;
+    const a = shape();
+    let b = shape();
+
+    while (b === a) b = shape();
+
+    const c = mode ? shape() : a;
+    const answer = mode ? a : b;
+    const items = mode ? [a, b, c, a, b, null] : [a, b, a, b, a, null];
+
+    return {
+      id, category, level,
+      visual: { kind: "sequence", items },
+      options: makeOptions(answer, SHAPES, random),
+      answer,
+      rule: mode
+        ? "세 도형이 순서대로 반복돼."
+        : "두 도형이 번갈아 나타나.",
+      steps: [
+        `첫 번째 도형은 ${SHAPE_NAMES[a]}이야.`,
+        mode
+          ? `${SHAPE_NAMES[a]} → ${SHAPE_NAMES[b]} → ${SHAPE_NAMES[c]} 순서가 반복돼.`
+          : `${SHAPE_NAMES[a]}과 ${SHAPE_NAMES[b]}가 교대로 나타나.`,
+        `따라서 빈칸에는 ${SHAPE_NAMES[answer]}이 들어가.`
+      ]
+    };
+  }
+
+  if (category === "matrix") {
+    const shift = Math.floor(random() * 4);
+    const grid = Array.from({ length: 3 }, (_, r) =>
+      Array.from({ length: 3 }, (_, c) => SHAPES[(r + c + shift) % 4])
+    );
+
+    const answer = grid[2][2];
+    grid[2][2] = null;
+
+    return {
+      id, category, level,
+      visual: { kind: "matrix", grid },
+      options: makeOptions(answer, SHAPES, random),
+      answer,
+      rule: "각 행과 열에서 도형이 일정한 순서로 바뀌어.",
+      steps: [
+        "첫 번째 행에서 오른쪽으로 갈 때 도형이 한 단계씩 바뀌어.",
+        "다음 행도 같은 규칙을 따라.",
+        `마지막 칸에는 ${SHAPE_NAMES[answer]}이 들어가.`
+      ]
+    };
+  }
+
+  if (category === "rotation") {
+    const start = Math.floor(random() * 4) * 90;
+    const turns = level + 1;
+    const answer = (start + turns * 90) % 360;
+    const angles = [0, 90, 180, 270];
+
+    return {
+      id, category, level,
+      visual: { kind: "rotation", angle: start, turns },
+      options: shuffle(angles, random),
+      answer,
+      rule: `도형을 시계 방향으로 ${turns}번, 매번 90도씩 돌려.`,
+      steps: [
+        `시작 각도는 ${start}도야.`,
+        `${turns}번 회전하므로 ${turns} × 90 = ${turns * 90}도 회전해.`,
+        `한 바퀴인 360도를 기준으로 계산하면 정답은 ${answer}도야.`
+      ]
+    };
+  }
+
+  if (category === "symmetry") {
+    const original = shape();
+    const axis = index % 2 === 0 ? "vertical" : "horizontal";
+
+    return {
+      id, category, level,
+      visual: { kind: "symmetry", shape: original, axis },
+      options: makeOptions(original, SHAPES, random),
+      answer: original,
+      rule: "대칭축을 기준으로 반대편에 같은 모양이 나타나.",
+      steps: [
+        `기준 도형은 ${SHAPE_NAMES[original]}이야.`,
+        "대칭은 기준선에서 같은 거리만큼 반대편에 대응하는 모양을 놓는 규칙이야.",
+        `따라서 대응하는 도형은 ${SHAPE_NAMES[original]}이야.`
+      ]
+    };
+  }
+
+  if (category === "odd") {
+    const common = shape();
+    let odd = shape();
+
+    while (odd === common) odd = shape();
+
+    const items = shuffle(
+      [common, common, common, odd],
+      random
+    );
+
+    return {
+      id, category, level,
+      visual: { kind: "odd", items },
+      options: items.map((_, i) => i),
+      answer: items.indexOf(odd),
+      rule: "세 개는 같은 도형이고 하나만 모양이 달라.",
+      steps: [
+        `같은 도형은 ${SHAPE_NAMES[common]}이야.`,
+        `다른 하나는 ${SHAPE_NAMES[odd]}이야.`,
+        "따라서 다른 모양이 있는 위치를 선택하면 돼."
+      ]
+    };
+  }
+
+  if (category === "counting") {
+    const count = 3 + (index % 5);
+    const target = shape();
+
+    return {
+      id, category, level,
+      visual: {
+        kind: "counting",
+        items: Array.from({ length: count }, () => target),
+        count
+      },
+      options: makeOptions(count, [1, 2, 3, 4, 5, 6, 7, 8, 9], random),
+      answer: count,
+      rule: "그림에 있는 도형의 개수를 세면 돼.",
+      steps: [
+        `그림에는 ${SHAPE_NAMES[target]}이 반복돼.`,
+        `도형을 하나씩 세면 총 ${count}개야.`,
+        `따라서 정답은 ${count}개야.`
+      ]
+    };
+  }
+
+  if (category === "size") {
+    const sizes = level % 2 === 0
+      ? [2, 3, 4, 5, 6]
+      : [6, 5, 4, 3, 2];
+
+    const answer = sizes[sizes.length - 1];
+
+    return {
+      id, category, level,
+      visual: { kind: "size", sizes: sizes.slice(0, 4), next: null },
+      options: makeOptions(answer, [2, 3, 4, 5, 6, 7], random),
+      answer,
+      rule: level % 2 === 0
+        ? "도형의 크기가 점점 커져."
+        : "도형의 크기가 점점 작아져.",
+      steps: [
+        `크기 순서는 ${sizes.slice(0, 4).join(" → ")}이야.`,
+        level % 2 === 0
+          ? "각 도형이 이전보다 조금씩 커져."
+          : "각 도형이 이전보다 조금씩 작아져.",
+        `따라서 다음 크기는 ${answer}야.`
+      ]
+    };
+  }
+
+  // position
+  const cells = Array.from({ length: 4 }, (_, i) => ({
+    x: i % 3,
+    y: i % 3
+  }));
+
+  const answer = {
+    x: (cells[3].x + 1) % 3,
+    y: (cells[3].y + 1) % 3
+  };
+
+  const options = shuffle([
+    answer,
+    { x: 0, y: 0 },
+    { x: 2, y: 0 },
+    { x: 0, y: 2 }
+  ].filter((item, i, arr) =>
+    arr.findIndex((other) =>
+      other.x === item.x && other.y === item.y
+    ) === i
+  ), random);
+
+  while (options.length < 4) {
+    const candidate = {
+      x: Math.floor(random() * 3),
+      y: Math.floor(random() * 3)
+    };
+
+    if (!options.some((p) => p.x === candidate.x && p.y === candidate.y)) {
+      options.push(candidate);
     }
-  });
+  }
 
-  return shuffle(questions, age * 997 + 41).map((q, i) => ({
-    ...q,
-    displayNumber: i + 1
+  return {
+    id, category, level,
+    visual: { kind: "position", cells },
+    options,
+    answer,
+    rule: "점이 오른쪽 아래 방향으로 이동하고 가장자리에 닿으면 반대편으로 이어져.",
+    steps: [
+      "점의 위치가 한 칸씩 오른쪽 아래로 이동해.",
+      "격자 가장자리를 넘으면 반대편에서 이어진다고 생각해.",
+      `따라서 다음 위치는 (${answer.x + 1}, ${answer.y + 1})이야.`
+    ]
+  };
+}
+
+export function generateQuestions({ seed = Date.now() } = {}) {
+  const random = makeRandom(seed);
+
+  const questions = CATEGORIES.flatMap((category) =>
+    Array.from({ length: 5 }, (_, i) =>
+      makeQuestion(category.id, Math.floor(i / 2) + 1, i, random)
+    )
+  );
+
+  return shuffle(questions, random).map((question, index) => ({
+    ...question,
+    number: index + 1
   }));
 }
+
+export { CATEGORIES, SHAPES, SHAPE_NAMES };
